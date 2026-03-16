@@ -99,49 +99,51 @@ _TASK_NOTEBOOK_ALIASES = {
 }
 
 
-def _find_notebook_path(task_id: str, directory: str, suffix: str = "") -> Path | None:
-    """Find notebook path by task_id in a given directory.
+def _build_notebook_map(directory: str, suffix: str = "") -> dict[str, Path]:
+    """Build a map from notebook name (without number prefix and suffix) to file path.
 
-    Template files: '01_relu.ipynb', Solution files: '01_relu_solution.ipynb'.
+    E.g. '05_attention.ipynb' → {'attention': Path(...)}
+         '05_attention_solution.ipynb' → {'attention': Path(...)}
     """
     base_dir = Path(__file__).parent.parent / directory
     if not base_dir.exists():
-        return None
-
-    # Check aliases
-    lookup_ids = [task_id]
-    if task_id in _TASK_NOTEBOOK_ALIASES:
-        lookup_ids.append(_TASK_NOTEBOOK_ALIASES[task_id])
-
-    for lid in lookup_ids:
-        # Try exact match first
-        exact = base_dir / f"{lid}{suffix}.ipynb"
-        if exact.exists():
-            return exact
-
-    # Try with number prefix (e.g., 01_relu.ipynb or 01_relu_solution.ipynb)
+        return {}
+    result: dict[str, Path] = {}
     for f in sorted(base_dir.glob(f"*{suffix}.ipynb")):
-        name = f.stem  # "01_relu" or "01_relu_solution"
-        # Remove suffix to get base name
+        name = f.stem
         base = name.removesuffix(suffix) if suffix else name
-        for lid in lookup_ids:
-            if base.endswith(f"_{lid}") or base == lid:
-                return f
-            parts = base.split("_", 1)
-            if len(parts) == 2 and parts[1] == lid:
-                return f
+        # Strip leading number prefix: "05_attention" → "attention"
+        parts = base.split("_", 1)
+        key = parts[1] if len(parts) == 2 and parts[0].isdigit() else base
+        result[key] = f
+    return result
 
+
+# Build maps once at startup
+_TEMPLATE_MAP = _build_notebook_map("templates")
+_SOLUTION_MAP = _build_notebook_map("solutions", "_solution")
+
+
+def _find_notebook_path(task_id: str, notebook_map: dict[str, Path]) -> Path | None:
+    """Find notebook path by task_id using pre-built map."""
+    # Direct match
+    if task_id in notebook_map:
+        return notebook_map[task_id]
+    # Check aliases
+    alias = _TASK_NOTEBOOK_ALIASES.get(task_id)
+    if alias and alias in notebook_map:
+        return notebook_map[alias]
     return None
 
 
 def _find_template_path(task_id: str) -> Path | None:
     """Find template notebook path by task_id."""
-    return _find_notebook_path(task_id, "templates")
+    return _find_notebook_path(task_id, _TEMPLATE_MAP)
 
 
 def _find_solution_path(task_id: str) -> Path | None:
     """Find solution notebook path by task_id."""
-    return _find_notebook_path(task_id, "solutions", "_solution")
+    return _find_notebook_path(task_id, _SOLUTION_MAP)
 
 
 def _get_task_description(task_id: str) -> str:

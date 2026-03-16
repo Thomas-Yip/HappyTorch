@@ -15,6 +15,7 @@
 ![GPU](https://img.shields.io/badge/GPU-无需-brightgreen?style=flat-square)
 
 > **动态**
+> - 2026-03-16：感谢 [damaoooo](https://github.com/damaoooo) 报告 Notebook 匹配 Bug（attention 与 multihead_attention 冲突）。已将脆弱的后缀匹配替换为显式名称映射，彻底解决此类问题。
 > - 2026-03-13：感谢 [wavetao2010](https://github.com/wavetao2010) 贡献 Docker 镜像支持，支持 Web/Jupyter 双模式及预构建镜像。
 > - 2026-03-12：Web 界面侧边栏新增题目分类展示（基础层、注意力机制、RLHF 等），支持折叠/展开，方便按专题刷题。
 > - 2026-03-10：感谢 [SongHuang1](https://github.com/SongHuang1) 贡献 MLP XOR 训练题目（纯 NumPy 手写前向+反向传播）。修复 Web 界面问题：class 类题目（LoRA、SwiGLU 等）现已正常工作，执行环境添加 `nn`/`F`/`numpy`/`math` 支持，修复 Windows 上 OpenMP 冲突导致的崩溃，修复 MHA 题解查找，前端增加 60 秒请求超时保护。
@@ -295,6 +296,7 @@ HappyTorch 基于 <a href="https://github.com/duoan/TorchCode">TorchCode</a>（1
 - [Rivflyyy](https://github.com/Rivflyyy) — [happytorch-plugin](https://github.com/Rivflyyy/happytorch-plugin) 插件
 - [SongHuang1](https://github.com/SongHuang1) — MLP XOR 训练题目
 - [wavetao2010](https://github.com/wavetao2010) — Docker 镜像支持
+- [damaoooo](https://github.com/damaoooo) — Notebook 匹配 Bug 修复
 
 ## 许可证
 

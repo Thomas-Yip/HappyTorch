@@ -15,6 +15,7 @@
 ![GPU](https://img.shields.io/badge/GPU-not%20required-brightgreen?style=flat-square)
 
 > **News**
+> - 2026-03-16: Thanks to [damaoooo](https://github.com/damaoooo) for reporting the notebook matching bug (attention vs multihead_attention). Replaced fragile suffix-based matching with an explicit name mapping for long-term reliability.
 > - 2026-03-13: Thanks to [wavetao2010](https://github.com/wavetao2010) for adding Docker image support with dual-mode (Web/Jupyter) and pre-built images.
 > - 2026-03-12: Web UI now groups problems by category (Fundamentals, Attention, RLHF, etc.) with collapsible sections in the sidebar for easier topic-based practice.
 > - 2026-03-10: Thanks to [SongHuang1](https://github.com/SongHuang1) for contributing the MLP XOR training problem (pure NumPy, manual forward + backward). Fixed Web UI issues: class-based tasks (LoRA, SwiGLU, etc.) now work correctly, added `nn`/`F`/`numpy`/`math` to execution namespace, fixed OpenMP crash on Windows, added MHA solution lookup, added 60s request timeout.
@@ -295,6 +296,7 @@ Community contributions:
 - [Rivflyyy](https://github.com/Rivflyyy) — [happytorch-plugin](https://github.com/Rivflyyy/happytorch-plugin)
 - [SongHuang1](https://github.com/SongHuang1) — MLP XOR training problem
 - [wavetao2010](https://github.com/wavetao2010) — Docker image support
+- [damaoooo](https://github.com/damaoooo) — Notebook matching bug fix
 
 ## License
 
