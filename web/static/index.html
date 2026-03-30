@@ -561,6 +561,91 @@
             white-space: pre;
         }
 
+        /* Submission History */
+        .history-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 0 16px 12px;
+            overflow: hidden;
+        }
+        .history-item.success { border-left: 3px solid var(--success); }
+        .history-item.fail { border-left: 3px solid var(--error); }
+
+        .history-header {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .history-header:hover { background: var(--bg-hover); }
+
+        .history-status { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
+        .pass-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .pass-badge.success { background: rgba(63,185,80,0.2); color: var(--success); }
+        .pass-badge.fail { background: rgba(248,81,73,0.2); color: var(--error); }
+
+        .history-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .history-detail {
+            display: none;
+            border-top: 1px solid var(--border);
+        }
+        .history-detail.show { display: block; }
+
+        .history-code-section {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .history-code-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .history-code-block {
+            background: var(--bg-primary);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 0;
+            color: var(--text-primary);
+        }
+        .history-results-section { padding: 8px 16px 12px; }
+
+        .btn-load-code {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-load-code:hover { background: var(--accent-hover); }
+
         /* Results Panel */
         .results-panel {
             background: var(--bg-secondary);
@@ -916,6 +1001,7 @@
                     <button class="tab-btn active" data-tab="code">代码</button>
                     <button class="tab-btn" data-tab="description">题目描述</button>
                     <button class="tab-btn" data-tab="solution" id="solutionTabBtn" style="display: none;">题解</button>
+                    <button class="tab-btn" data-tab="history">提交记录</button>
                 </div>
 
                 <div class="editor-container" id="codeTab">
@@ -960,6 +1046,15 @@
                             <pre class="solution-code-block"><code id="solutionCode"></code></pre>
                         </div>
                     </div>
+                </div>
+
+                <div class="description-panel" id="historyTab" style="display: none;">
+                    <div id="historyLoading" style="color: var(--text-secondary); padding: 20px;">加载提交记录中...</div>
+                    <div id="historyEmpty" style="display: none; color: var(--text-secondary); padding: 20px; text-align: center;">
+                        <i class="ri-history-line" style="font-size: 32px; display: block; margin-bottom: 8px; color: var(--text-muted);"></i>
+                        暂无提交记录
+                    </div>
+                    <div id="historyList" style="display: none; padding-top: 12px;"></div>
                 </div>
 
                 <div class="results-panel" id="resultsPanel">
@@ -1299,10 +1394,15 @@
             document.getElementById('codeTab').style.display = tab === 'code' ? 'flex' : 'none';
             document.getElementById('descriptionTab').style.display = tab === 'description' ? 'block' : 'none';
             document.getElementById('solutionTab').style.display = tab === 'solution' ? 'block' : 'none';
+            document.getElementById('historyTab').style.display = tab === 'history' ? 'block' : 'none';
 
             // Lazy-load solution on first tab switch
             if (tab === 'solution' && currentTask && !currentTask._solutionLoaded) {
                 loadSolution(currentTask.id);
+            }
+            // Always reload history when switching to the tab
+            if (tab === 'history' && currentTask) {
+                loadHistory(currentTask.id);
             }
         }
 
@@ -1355,6 +1455,97 @@
             }).catch(() => {
                 showToast('复制失败', 'error');
             });
+        }
+
+        // Submission History
+        let _currentSubmissions = [];
+
+        async function loadHistory(taskId) {
+            const loading = document.getElementById('historyLoading');
+            const empty = document.getElementById('historyEmpty');
+            const list = document.getElementById('historyList');
+
+            loading.style.display = 'block';
+            empty.style.display = 'none';
+            list.style.display = 'none';
+            _currentSubmissions = [];
+
+            try {
+                const res = await fetch(`${API_BASE}/api/tasks/${taskId}/submissions`);
+                const data = await res.json();
+                const submissions = data.submissions;
+                _currentSubmissions = submissions;
+
+                loading.style.display = 'none';
+
+                if (!submissions || submissions.length === 0) {
+                    empty.style.display = 'block';
+                    return;
+                }
+
+                list.style.display = 'block';
+                list.innerHTML = submissions.map((s, i) => {
+                    const date = new Date(s.timestamp);
+                    const timeStr = date.toLocaleString('zh-CN');
+                    const statusClass = s.success ? 'success' : 'fail';
+                    const statusText = s.success ? '通过' : '未通过';
+                    const execTime = (s.total_time * 1000).toFixed(1);
+
+                    return `
+                        <div class="history-item ${statusClass}">
+                            <div class="history-header" onclick="toggleHistoryDetail(${i})">
+                                <div class="history-status">
+                                    <span class="pass-badge ${statusClass}">${s.passed}/${s.total} ${statusText}</span>
+                                </div>
+                                <div class="history-meta">
+                                    <span>${execTime}ms</span>
+                                    <span>${timeStr}</span>
+                                    <i class="ri-arrow-down-s-line"></i>
+                                </div>
+                            </div>
+                            <div class="history-detail" id="historyDetail-${i}">
+                                <div class="history-code-section">
+                                    <div class="history-code-header">
+                                        <span>提交代码</span>
+                                        <button class="btn-load-code" onclick="loadHistoryCode(${i}); event.stopPropagation();">
+                                            <i class="ri-upload-2-line"></i> 加载到编辑器
+                                        </button>
+                                    </div>
+                                    <pre class="history-code-block">${escapeHtml(s.code)}</pre>
+                                </div>
+                                <div class="history-results-section">
+                                    ${s.results.map((r, j) => `
+                                        <div class="result-item ${r.passed ? 'passed' : 'failed'}">
+                                            <div class="result-name">
+                                                <span class="result-icon">${r.passed ? '✓' : '✗'}</span>
+                                                <span>Test ${j + 1}: ${escapeHtml(r.name)}</span>
+                                            </div>
+                                            <span class="result-time">${(r.time * 1000).toFixed(1)}ms</span>
+                                        </div>
+                                        ${r.error ? `<div class="result-error">${escapeHtml(r.error)}</div>` : ''}
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load history:', e);
+                loading.textContent = '加载提交记录失败';
+            }
+        }
+
+        function toggleHistoryDetail(index) {
+            const detail = document.getElementById(`historyDetail-${index}`);
+            detail.classList.toggle('show');
+        }
+
+        function loadHistoryCode(index) {
+            if (_currentSubmissions[index] && editor) {
+                editor.setValue(_currentSubmissions[index].code);
+                switchTab('code');
+                showToast('已加载历史代码', 'success');
+            }
         }
 
         function showResults(result) {

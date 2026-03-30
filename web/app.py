@@ -30,6 +30,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from torch_judge.tasks import get_task, list_tasks
 from torch_judge.progress import _load, mark_solved, mark_attempted
+from torch_judge.submissions import add_submission, get_submissions, clear_submissions
 
 app = FastAPI(title="HappyTorch", description="PyTorch Interview Practice Platform")
 
@@ -535,7 +536,18 @@ async def submit_code(request: SubmitRequest):
         raise HTTPException(status_code=404, detail="Task not found")
     
     passed, total, total_time, results, output = _run_tests(request.task_id, request.code)
-    
+
+    # Record submission history
+    add_submission(
+        task_id=request.task_id,
+        code=request.code,
+        passed=passed,
+        total=total,
+        total_time=total_time,
+        results=results,
+        output=output,
+    )
+
     # Update progress
     if passed == total:
         mark_solved(request.task_id, total_time)
@@ -552,11 +564,21 @@ async def submit_code(request: SubmitRequest):
     )
 
 
+@app.get("/api/tasks/{task_id}/submissions")
+async def get_task_submissions(task_id: str):
+    """Get submission history for a task."""
+    task = get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return {"task_id": task_id, "submissions": get_submissions(task_id)}
+
+
 @app.post("/api/reset")
 async def reset_progress():
-    """Reset all progress."""
+    """Reset all progress and submission history."""
     from torch_judge.progress import reset_progress as _reset
     _reset()
+    clear_submissions()
     return {"success": True}
 
 
