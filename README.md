@@ -15,6 +15,7 @@
 ![GPU](https://img.shields.io/badge/GPU-not%20required-brightgreen?style=flat-square)
 
 > **News**
+> - 2026-04-03: **Online Practice Now Available!** Try HappyTorch directly in your browser at [happytorch.wavetao.top](https://happytorch.wavetao.top/) — no installation required. Feedback and suggestions welcome in [Issues](https://github.com/Rivflyyy/HappyTorch/issues).
 > - 2026-03-16: Thanks to [damaoooo](https://github.com/damaoooo) for reporting the notebook matching bug (attention vs multihead_attention). Replaced fragile suffix-based matching with an explicit name mapping for long-term reliability.
 > - 2026-03-13: Thanks to [wavetao2010](https://github.com/wavetao2010) for adding Docker image support with dual-mode (Web/Jupyter) and pre-built images.
 > - 2026-03-12: Web UI now groups problems by category (Fundamentals, Attention, RLHF, etc.) with collapsible sections in the sidebar for easier topic-based practice.

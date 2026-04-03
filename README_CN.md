@@ -15,6 +15,7 @@
 ![GPU](https://img.shields.io/badge/GPU-无需-brightgreen?style=flat-square)
 
 > **动态**
+> - 2026-04-03：**在线刷题服务上线！** 无需安装，直接在浏览器体验：[happytorch.wavetao.top](https://happytorch.wavetao.top/)。如有改进建议，欢迎在 [Issues](https://github.com/Rivflyyy/HappyTorch/issues) 中提出。
 > - 2026-03-16：感谢 [damaoooo](https://github.com/damaoooo) 报告 Notebook 匹配 Bug（attention 与 multihead_attention 冲突）。已将脆弱的后缀匹配替换为显式名称映射，彻底解决此类问题。
 > - 2026-03-13：感谢 [wavetao2010](https://github.com/wavetao2010) 贡献 Docker 镜像支持，支持 Web/Jupyter 双模式及预构建镜像。
 > - 2026-03-12：Web 界面侧边栏新增题目分类展示（基础层、注意力机制、RLHF 等），支持折叠/展开，方便按专题刷题。
